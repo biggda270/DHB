@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DHB - Historical Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #2d2d2d;
+            min-height: 100vh;
+        }
+        .accordion-header {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .accordion-header:active {
+            transform: scale(0.98);
+        }
+        .accordion-header:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .accordion-content.active {
+            max-height: 6000px;
+            transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(203, 213, 225, 0.5);
+        }
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fbbf24;
+            width: 16px;
+            height: 16px;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .chevron {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+        .stat-badge {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .section-card {
+            transition: all 0.3s ease;
+        }
+        .section-card:hover {
+            transform: translateX(4px);
+        }
+        .parallax-bg {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        /* Improved scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+        }
+        /* Shine effect on hover */
+        .shine {
+            position: relative;
+            overflow: hidden;
+        }
+        .shine::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+        .shine:hover::before {
+            transform: translateX(100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-stone-50">
+
+    <!-- Header -->
+    <header class="glass-effect shadow-lg sticky top-0 z-50 border-b border-white/20">
+        <div class="px-4 py-5">
+            <h1 class="text-3xl font-bold text-center mb-1" style="background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                DHB Historical Analysis
+            </h1>
+            <p class="text-xs text-gray-600 text-center font-medium">A Critical Examination of Democratic Policy Impacts</p>
+        </div>
+    </header>
+
+    <!-- Hero Section with Background Image -->
+    <section class="relative h-64 overflow-hidden">
+        <!-- PLACE IMAGE 1 HERE: Background hero image -->
+        <!-- Suggested: Historical photo collage or abstract image representing Black American history -->
+        <!-- Recommended sources: Unsplash.com search "civil rights" or "black history" -->
+        <!-- OR use: https://images.unsplash.com/photo-1485081669829-bacb8c7bb1f1 -->
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1485081669829-bacb8c7bb1f1?w=1200&q=80'); filter: brightness(0.4);"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#1a1a2e]"></div>
+        <div class="relative h-full flex items-center justify-center px-4">
+            <div class="text-center">
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-2xl">Examining History</h2>
+                <p class="text-lg text-white/90 font-medium drop-shadow-xl">Understanding the Past to Inform the Future</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content - Vertical Accordion -->
+    <main class="px-4 py-6 pb-24 max-w-2xl mx-auto">
+
+        <!-- Section 1: Overview -->
+        <div class="mb-4 section-card">
+            <div class="accordion-header shine bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 rounded-2xl p-5 cursor-pointer" onclick="toggleSection('overview')">
+                <div class="flex justify-between items-center">
+                    <div class="flex-1">
+                        <div class="flex items-center mb-1">
+                            <span class="text-2xl mr-3">📊</span>
+                            <h2 class="text-xl font-bold text-white">Overview</h2>
+                        </div>
+                        <p class="text-sm text-indigo-100 ml-11">Historical critiques summary</p>
+                    </div>
+                    <svg class="chevron w-7 h-7 text-white transition-transform" id="chevron-overview" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="accordion-content" id="content-overview">
+                <div class="glass-effect rounded-b-2xl p-5 mt-2 shadow-xl border-t-0">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Segregation -->
+        <div class="mb-4 section-card">
+            <div class="accordion-header shine bg-gradient-to-br from-amber-600 via-orange-600 to-red-600 rounded-2xl p-5 cursor-pointer" onclick="toggleSection('segregation')">
+                <div class="flex justify-between items-center">
+                    <div class="flex-1">
+                        <div class="flex items-center mb-1">
+                            <span class="text-2xl mr-3">⚖️</span>
+                            <h2 class="text-xl font-bold text-white">The Segregation Era</h2>
+                        </div>
+                        <p class="text-sm text-orange-100 ml-11">Jim Crow & The Solid South</p>
+                    </div>
+                    <svg class="chevron w-7 h-7 text-white transition-transform" id="chevron-segregation" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="accordion-content" id="content-segregation">
+                <div class="glass-effect rounded-b-2xl p-5 mt-2 shadow-xl border-t-0">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Incarceration -->
+        <div class="mb-4 section-card">
+            <div class="accordion-header shine bg-gradient-to-br from-red-600 via-rose-700 to-pink-700 rounded-2xl p-5 cursor-pointer" onclick="toggleSection('incarceration')">
+                <div class="flex justify-between items-center">
+                    <div class="flex-1">
+                        <div class="flex items-center mb-1">
+                            <span class="text-2xl mr-3">🔒</span>
+                            <h2 class="text-xl font-bold text-white">Crime & Justice</h2>
+                        </div>
+                        <p class="text-sm text-rose-100 ml-11">1994 Crime Bill & Mass Incarceration</p>
+                    </div>
+                    <svg class="chevron w-7 h-7 text-white transition-transform" id="chevron-incarceration" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="accordion-content" id="content-incarceration">
+                <div class="glass-effect rounded-b-2xl p-5 mt-2 shadow-xl border-t-0">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Immigration -->
+        <div class="mb-4 section-card">
+            <div class="accordion-header shine bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600 rounded-2xl p-5 cursor-pointer" onclick="toggleSection('immigration')">
+                <div class="flex justify-between items-center">
+                    <div class="flex-1">
+                        <div class="flex items-center mb-1">
+                            <span class="text-2xl mr-3">🌍</span>
+                            <h2 class="text-xl font-bold text-white">Immigration & Economics</h2>
+                        </div>
+                        <p class="text-sm text-cyan-100 ml-11">Resource allocation & displacement</p>
+                    </div>
+                    <svg class="chevron w-7 h-7 text-white transition-transform" id="chevron-immigration" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="accordion-content" id="content-immigration">
+                <div class="glass-effect rounded-b-2xl p-5 mt-2 shadow-xl border-t-0">
+                    <!-- Content injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Assistant - Floating at bottom -->
+        <div class="relative overflow-hidden rounded-2xl shadow-2xl mt-8" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="absolute inset-0 bg-black opacity-20"></div>
+            <div class="relative p-6">
+                <div class="flex items-center mb-4">
+                    <span class="text-3xl mr-3">🤖</span>
+                    <div>
+                        <h3 class="text-xl font-bold text-white flex items-center">
+                            Ask the Archivist
+                            <span class="ml-2 text-yellow-300">✨</span>
+                        </h3>
+                        <p class="text-xs text-purple-100 mt-1">AI-powered historical analysis</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <textarea id="ai-prompt" rows="3" class="w-full text-sm p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:border-transparent transition-all" placeholder="Ask me anything about these historical eras..."></textarea>
+
+                    <button onclick="askArchivist()" id="btn-ask" class="w-full py-3 px-6 rounded-xl text-white font-bold transition-all transform hover:scale-105 active:scale-95 flex justify-center items-center shadow-lg" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">
+                        <span>Analyze Context ✨</span>
+                    </button>
+                </div>
+
+                <div id="ai-response-container" class="mt-5 pt-5 border-t border-white/20 hidden">
+                    <div class="flex items-center mb-2">
+                        <span class="text-lg mr-2">💭</span>
+                        <p class="text-xs font-bold text-purple-200">ARCHIVIST RESPONSE</p>
+                    </div>
+                    <div id="ai-response-text" class="text-sm text-white leading-relaxed max-h-56 overflow-y-auto pr-2 bg-black/20 rounded-xl p-4 backdrop-blur-sm"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="glass-effect border-t border-white/20 py-6 mt-8">
+        <p class="text-center text-xs text-gray-600 font-medium">© 2026 DHB Historical Policy Analysis</p>
+        <p class="text-center text-xs text-gray-400 mt-1">Designed for educational purposes</p>
+    </footer>
+
+    <script>
+        // --- GEMINI API CONFIG ---
+        const apiKey = ""; // System provides key at runtime
+        let currentEraKey = 'overview';
+
+        // --- DATA STORE ---
+        const appData = {
+            overview: {
+                title: "Analysis Overview",
+                intro: "This platform facilitates an examination of three critical historical phases. The initial phase covers the Democratic Party's roots in the South and the enforcement of Jim Crow. The second phase analyzes the pivotal shift in the 1990s towards mass incarceration policies that disproportionately affected Black men. The final phase explores the post-1965 immigration landscape and current economic tensions.",
+                content: [
+                    {
+                        type: 'highlight',
+                        title: 'Key Historical Critiques',
+                        points: [
+                            'The "Solid South" Democratic bloc created and enforced Jim Crow laws.',
+                            'Exclusion of Black Americans from New Deal benefits (G.I. Bill) often administered by local Democrat officials.',
+                            'The 1994 Crime Bill (Biden/Clinton) accelerated mass incarceration.',
+                            'The 1965 Hart-Celler Act shifted demographics, creating labor competition arguments.',
+                            'Modern "Sanctuary City" resource allocation vs. underfunded inner-city communities.'
+                        ]
+                    }
+                ],
+                chart1Type: 'line',
+                chart1Data: {
+                    labels: ['1960', '1970', '1980', '1990', '2000', '2010', '2020'],
+                    datasets: [{
+                        label: 'White Family Wealth (Avg)',
+                        data: [100, 120, 135, 150, 180, 170, 188], // Indexed/Normalized for trend
+                        borderColor: '#8c735a',
+                        tension: 0.3
+                    }, {
+                        label: 'Black Family Wealth (Avg)',
+                        data: [15, 18, 20, 22, 25, 20, 24], // Gap persists
+                        borderColor: '#c55a5a',
+                        tension: 0.3
+                    }]
+                },
+                chart2Type: 'bar',
+                chart2Data: {
+                    labels: ['1980', '1990', '2000', '2010'],
+                    datasets: [{
+                        label: 'Incarceration Rate (Per 100k)',
+                        data: [139, 290, 478, 450], // General trend
+                        backgroundColor: '#a8a29e'
+                    }]
+                }
+            },
+            segregation: {
+                title: "The Segregation Era & The Solid South",
+                intro: "From the post-Reconstruction era until the mid-20th century, the Democratic Party in the South ('Dixiecrats') was the primary political vehicle for white supremacy and segregation. During this period, foundational Black Americans were systematically excluded from the political process and economic opportunities through laws enacted by Democratic legislatures.",
+                content: [
+                    {
+                        type: 'card',
+                        title: 'The "Solid South"',
+                        text: 'For decades, the South voted overwhelmingly Democratic. This bloc filibustered anti-lynching bills and enforced Jim Crow laws. Prominent figures like Strom Thurmond (who later switched parties) and George Wallace operated within this framework.'
+                    },
+                    {
+                        type: 'card',
+                        title: 'New Deal Exclusion',
+                        text: 'While the New Deal provided relief, Southern Democrats ensured that key provisions (like the G.I. Bill and minimum wage laws) initially excluded agricultural and domestic workers—professions dominated by Black Americans at the time. This prevented the accumulation of generational wealth during America\'s post-war boom.'
+                    }
+                ],
+                chart1Type: 'bar',
+                chart1Data: {
+                    labels: ['1880', '1900', '1920', '1940', '1960'],
+                    datasets: [{
+                        label: 'Southern Democrat Vote %',
+                        data: [90, 92, 85, 88, 60],
+                        backgroundColor: '#8c735a'
+                    }]
+                },
+                chart2Type: 'doughnut',
+                chart2Data: {
+                    labels: ['Agricultural/Domestic (Excluded)', 'Other Industries'],
+                    datasets: [{
+                        data: [65, 35], // Approx % of Black workforce excluded from early protections
+                        backgroundColor: ['#c55a5a', '#e5e7eb']
+                    }]
+                },
+                context: "The economic foundation of the Black middle class was undercut during this era by exclusion from home loans and G.I. benefits, a legacy that persists in the wealth gap today."
+            },
+            incarceration: {
+                title: "1990s: The Crime Bill & Mass Incarceration",
+                intro: "In an effort to shed the 'soft on crime' label, the 'New Democrats' of the 1990s, led by Bill Clinton and Joe Biden, championed the 1994 Violent Crime Control and Law Enforcement Act. Critics argue this legislation devastated Black families by imposing harsh mandatory minimums and funding prison expansion.",
+                content: [
+                    {
+                        type: 'card',
+                        title: '1994 Crime Bill',
+                        text: 'Authored largely by Joe Biden and signed by Bill Clinton. It provided $9.7 billion in funding for prisons and $8.8 billion for police hiring. It encouraged states to effectively eliminate parole and adopt "truth-in-sentencing" laws.'
+                    },
+                    {
+                        type: 'card',
+                        title: 'Impact on Black Families',
+                        text: 'The legislation contributed to the explosion of the prison population. Black men were incarcerated at disproportionately high rates, removing fathers from homes and stripping voting rights (felony disenfranchisement) in key swing states.'
+                    },
+                    {
+                        type: 'card',
+                        title: '"Superpredator" Rhetoric',
+                        text: 'The political rhetoric of the time, including Hillary Clinton\'s use of the term "superpredator," is cited as evidence of the dehumanization of Black youth to justify harsh policy.'
+                    }
+                ],
+                chart1Type: 'line',
+                chart1Data: {
+                    labels: ['1980', '1990', '1995', '2000', '2005'],
+                    datasets: [{
+                        label: 'Federal Prison Pop. (Thousands)',
+                        data: [24, 65, 100, 145, 180], // Sharp rise after 1994
+                        borderColor: '#c55a5a',
+                        tension: 0.1
+                    }]
+                },
+                chart2Type: 'bar',
+                chart2Data: {
+                    labels: ['White', 'Hispanic', 'Black'],
+                    datasets: [{
+                        label: 'Incarceration Rate per 100k (2010)',
+                        data: [450, 831, 2306], // Disparity visuals
+                        backgroundColor: ['#d6d3d1', '#a8a29e', '#78716c']
+                    }]
+                },
+                context: "While crime rates did fall in the 1990s, analysts debate the role of the bill versus economic factors. The undeniable result, however, was the mass removal of Black men from their communities."
+            },
+            immigration: {
+                title: "Immigration Prioritization & Economic Displacement",
+                intro: "A central critique in recent years is that the Democratic Party has pivoted focus towards new immigrants (both legal and undocumented) at the expense of Foundational Black Americans. This section examines the 1965 Immigration Act, labor competition, and modern 'Sanctuary City' resource disputes.",
+                content: [
+                    {
+                        type: 'card',
+                        title: '1965 Hart-Celler Act',
+                        text: 'Championed by Ted Kennedy, this act abolished the quota system based on national origin. While presented as a civil rights victory, critics argue it opened the floodgates to low-skilled labor that competes directly with low-skilled Black workers, suppressing wages.'
+                    },
+                    {
+                        type: 'card',
+                        title: 'Sanctuary Cities & Resources',
+                        text: 'In cities like New York and Chicago, historically Black neighborhoods have seen resources (recreation centers, schools, hotels) repurposed to house migrants. Critics point to the speed at which funds are found for migrants contrast with decades of underfunding for Black communities.'
+                    },
+                    {
+                        type: 'card',
+                        title: 'Economic Displacement',
+                        text: 'Research by economists like George Borjas suggests that immigration disproportionately affects the wages of native-born workers with lower education levels—a demographic that historically includes a significant portion of the Black workforce due to systemic educational disparities.'
+                    }
+                ],
+                chart1Type: 'line',
+                chart1Data: {
+                    labels: ['1970', '1990', '2010', '2020'],
+                    datasets: [{
+                        label: 'Immigrant Population Share %',
+                        data: [4.7, 7.9, 12.9, 13.7],
+                        borderColor: '#8c735a',
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Black Low-Skill Wage Growth (Adj)',
+                        data: [100, 98, 95, 96], // Stagnation concept
+                        borderColor: '#c55a5a',
+                        yAxisID: 'y1'
+                    }]
+                },
+                chart2Type: 'bar',
+                chart2Data: {
+                    labels: ['Migrant Housing (2023)', 'Black Comm. Grants'],
+                    datasets: [{
+                        label: 'Emergency City Funding (Millions)',
+                        data: [300, 50], // Illustrative of the resource critique
+                        backgroundColor: ['#c55a5a', '#d6d3d1']
+                    }]
+                },
+                context: "The tension highlights a perceived shift in party priorities: seeking new voting blocs through immigration while assuming the Black vote remains secured despite lack of specific economic deliverables."
+            }
+        };
+
+        // --- GEMINI FUNCTIONS ---
+
+        // 1. Ask the Archivist (Text Generation)
+        async function askArchivist() {
+            const promptInput = document.getElementById('ai-prompt');
+            const question = promptInput.value.trim();
+            const btn = document.getElementById('btn-ask');
+            const responseContainer = document.getElementById('ai-response-container');
+            const responseText = document.getElementById('ai-response-text');
+
+            if (!question) return;
+
+            // UI State: Loading
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<div class="loader mr-2"></div> Analyzing...';
+            btn.disabled = true;
+            responseContainer.classList.remove('hidden');
+            responseText.innerText = "Consulting historical records...";
+
+            try {
+                // Construct Context-Aware Prompt
+                const currentContext = appData[currentEraKey];
+                const systemContext = `You are an expert historian and policy analyst specializing in the history of the US Democratic Party and its relationship with Foundational Black Americans (FBA). You are currently helping a user explore the "${currentContext.title}" era.
+
+                Context for this era: ${currentContext.intro}
+                Additional Details: ${JSON.stringify(currentContext.content.map(c => c.title + ": " + (c.text || c.points)))}
+
+                User Question: ${question}
+
+                Provide a concise, historically accurate answer (max 3-4 sentences) that directly addresses the user's question based on the provided context and general historical knowledge of this specific topic. Maintain an objective, analytical tone.`;
+
+                const response = await callGeminiAPI(systemContext);
+                responseText.innerText = response;
+            } catch (error) {
+                console.error("AI Error:", error);
+                responseText.innerText = "The archives are currently unavailable. Please try again later.";
+            } finally {
+                // UI State: Reset
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        async function callGeminiAPI(promptText, retries = 0) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: promptText }] }]
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    if (response.status === 429 && retries < 3) {
+                        const delay = Math.pow(2, retries) * 1000;
+                        await new Promise(r => setTimeout(r, delay));
+                        return callGeminiAPI(promptText, retries + 1);
+                    }
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
+            } catch (error) {
+                if (retries < 3) {
+                    const delay = Math.pow(2, retries) * 1000;
+                    await new Promise(r => setTimeout(r, delay));
+                    return callGeminiAPI(promptText, retries + 1);
+                }
+                throw error;
+            }
+        }
+
+        // 2. Audio Narrator (TTS)
+        async function playAudioIntro() {
+            const btn = document.getElementById('btn-audio');
+            const originalText = btn.innerHTML;
+            const introText = appData[currentEraKey].intro;
+
+            if (!introText) return;
+
+            btn.innerHTML = '<div class="loader w-3 h-3 mr-1"></div> Loading...';
+            btn.disabled = true;
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{ parts: [{ text: introText }] }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: {
+                            voiceConfig: {
+                                prebuiltVoiceConfig: { voiceName: "Kore" }
+                            }
+                        }
+                    }
+                };
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error("TTS API Error");
+
+                const result = await response.json();
+                const base64Audio = result.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+                const mimeType = result.candidates?.[0]?.content?.parts?.[0]?.inlineData?.mimeType; // "audio/L16;rate=24000"
+
+                if (base64Audio) {
+                    // Parse sample rate from mimeType (default 24000 if not found)
+                    let sampleRate = 24000;
+                    if (mimeType) {
+                        const match = mimeType.match(/rate=(\d+)/);
+                        if (match) sampleRate = parseInt(match[1], 10);
+                    }
+
+                    playPCM(base64Audio, sampleRate);
+                }
+
+            } catch (error) {
+                console.error("TTS Error:", error);
+                alert("Audio generation failed. Please try again.");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // PCM Helper Functions
+        function playPCM(base64Data, sampleRate) {
+            const binaryString = atob(base64Data);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            // Convert PCM16 to WAV
+            const wavBytes = getWavBytes(bytes.buffer, {
+                isFloat: false,       // integer PCM
+                numChannels: 1,       // Mono
+                sampleRate: sampleRate,
+                bitDepth: 16          // 16-bit
+            });
+
+            const blob = new Blob([wavBytes], { type: 'audio/wav' });
+            const audioUrl = URL.createObjectURL(blob);
+            const audio = new Audio(audioUrl);
+            audio.play();
+        }
+
+        // Simple WAV Header generator for PCM data
+        function getWavBytes(buffer, options) {
+            const type = options.isFloat ? 'f' : 's';
+            const numChannels = options.numChannels || 1;
+            const sampleRate = options.sampleRate || 44100;
+            const bitDepth = options.bitDepth || 16;
+
+            const bytesPerSample = bitDepth / 8;
+            const blockAlign = numChannels * bytesPerSample;
+
+            const bufferData = new Uint8Array(buffer);
+            const wavHeader = new ArrayBuffer(44);
+            const view = new DataView(wavHeader);
+
+            // RIFF chunk descriptor
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + bufferData.length, true);
+            writeString(view, 8, 'WAVE');
+
+            // fmt sub-chunk
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); // PCM format
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * blockAlign, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitDepth, true);
+
+            // data sub-chunk
+            writeString(view, 36, 'data');
+            view.setUint32(40, bufferData.length, true);
+
+            // Merge header and data
+            const wavBytes = new Uint8Array(wavHeader.byteLength + bufferData.byteLength);
+            wavBytes.set(new Uint8Array(wavHeader), 0);
+            wavBytes.set(bufferData, 44);
+
+            return wavBytes;
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        // --- VISUALIZATION FUNCTIONS ---
+
+        function toggleSection(key) {
+            const content = document.getElementById(`content-${key}`);
+            const chevron = document.getElementById(`chevron-${key}`);
+            const isActive = content.classList.contains('active');
+
+            if (isActive) {
+                // Close section
+                content.classList.remove('active');
+                chevron.classList.remove('rotate-180');
+            } else {
+                // Open section
+                currentEraKey = key;
+                content.classList.add('active');
+                chevron.classList.add('rotate-180');
+
+                // Render content for this section
+                renderSectionContent(key);
+            }
+        }
+
+        function renderSectionContent(key) {
+            const data = appData[key];
+            const contentDiv = document.getElementById(`content-${key}`).querySelector('div');
+
+            // Get era-specific image
+            const eraImages = {
+                overview: {
+                    url: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=800&q=80',
+                    alt: 'Historical timeline concept',
+                    credit: 'Search "timeline" or "history books" on Unsplash'
+                },
+                segregation: {
+                    url: 'https://images.unsplash.com/photo-1562818501-90e2f5a5e71e?w=800&q=80',
+                    alt: 'Segregation era imagery',
+                    credit: 'Search "civil rights movement" or "1960s protest" on Unsplash'
+                },
+                incarceration: {
+                    url: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&q=80',
+                    alt: 'Justice system imagery',
+                    credit: 'Search "prison bars" or "justice scales" on Unsplash'
+                },
+                immigration: {
+                    url: 'https://images.unsplash.com/photo-1569098644584-210bcd375b59?w=800&q=80',
+                    alt: 'Immigration and economics',
+                    credit: 'Search "migration" or "urban community" on Unsplash'
+                }
+            };
+
+            const img = eraImages[key];
+
+            // Build intro with hero image and audio button
+            let html = `
+                <!-- Era Hero Image -->
+                <div class="mb-5 fade-in relative overflow-hidden rounded-2xl shadow-xl">
+                    <div class="relative h-48 bg-cover bg-center" style="background-image: url('${img.url}');">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-5">
+                            <div class="flex justify-between items-end">
+                                <h3 class="text-2xl font-bold text-white drop-shadow-lg">${data.title}</h3>
+                                <button onclick="playAudio('${key}')" id="btn-audio-${key}" class="flex items-center gap-1 text-xs px-3 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 rounded-full text-white font-medium shadow-lg transition-all transform hover:scale-105">
+                                    <span>🔊</span>
+                                    <span>Listen</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-400 px-2 py-1 text-right">
+                        <!-- Replace with your images: ${img.credit} -->
+                    </div>
+                </div>
+
+                <div class="mb-5 fade-in">
+                    <p class="text-sm text-gray-700 leading-relaxed bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl border-l-4 border-indigo-500">${data.intro}</p>
+                </div>
+            `;
+
+            // Add content blocks
+            data.content.forEach(item => {
+                if (item.type === 'highlight') {
+                    html += `
+                        <div class="mb-5 p-5 rounded-2xl border-l-4 shadow-md transition-all hover:shadow-lg" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left-color: #3b82f6;">
+                            <h4 class="text-base font-bold text-gray-800 mb-3 flex items-center">
+                                <span class="text-xl mr-2">📌</span>
+                                ${item.title}
+                            </h4>
+                            <ul class="space-y-3 text-sm">
+                                ${item.points.map(pt => `<li class="flex items-start"><span class="text-blue-500 mr-3 text-lg font-bold">•</span><span class="text-gray-700 leading-relaxed">${pt}</span></li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                } else if (item.type === 'card') {
+                    html += `
+                        <div class="mb-4 p-4 rounded-xl shadow-md transition-all hover:shadow-lg hover:transform hover:scale-[1.02]" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                            <h4 class="text-base font-bold text-gray-800 mb-2 flex items-center">
+                                <span class="text-lg mr-2">🔹</span>
+                                ${item.title}
+                            </h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">${item.text}</p>
+                        </div>
+                    `;
+                }
+            });
+
+            // Add charts
+            html += `
+                <div class="mt-6 space-y-6">
+                    <div class="fade-in">
+                        <div class="flex items-center mb-3">
+                            <span class="text-lg mr-2">📈</span>
+                            <p class="text-sm font-bold text-gray-700">${getChartTitle(key, 1)}</p>
+                        </div>
+                        <div class="chart-container shadow-lg">
+                            <canvas id="chart1-${key}"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="fade-in">
+                        <div class="flex items-center mb-3">
+                            <span class="text-lg mr-2">📊</span>
+                            <p class="text-sm font-bold text-gray-700">${getChartTitle(key, 2)}</p>
+                        </div>
+                        <div class="chart-container shadow-lg">
+                            <canvas id="chart2-${key}"></canvas>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Context note
+            if (data.context) {
+                html += `
+                    <div class="mt-6 p-5 rounded-2xl border-l-4 shadow-md" style="background: linear-gradient(135deg, #fef3c7 0%, #fde047 100%); border-left-color: #f59e0b;">
+                        <div class="flex items-start">
+                            <span class="text-2xl mr-3">💡</span>
+                            <div>
+                                <p class="text-xs font-bold text-amber-900 mb-2">HISTORICAL CONTEXT</p>
+                                <p class="text-sm text-amber-900 leading-relaxed">${data.context}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            contentDiv.innerHTML = html;
+
+            // Render charts
+            renderChart(`chart1-${key}`, data.chart1Type, data.chart1Data, key);
+            renderChart(`chart2-${key}`, data.chart2Type, data.chart2Data, key);
+        }
+
+        function getChartTitle(key, chartNum) {
+            const titles = {
+                overview: ["Historical Wealth Gap", "Incarceration Growth"],
+                segregation: ["Southern Democrat Dominance", "New Deal Exclusion"],
+                incarceration: ["Federal Prison Pop Growth", "Racial Disparity (2010)"],
+                immigration: ["Immigration vs Wage Trends", "Resource Allocation"]
+            };
+            return titles[key][chartNum - 1];
+        }
+
+        function renderChart(canvasId, type, data, key) {
+            const ctx = document.getElementById(canvasId)?.getContext('2d');
+            if (!ctx) return;
+
+            new Chart(ctx, {
+                type: type,
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 10 } }
+                        }
+                    },
+                    scales: type === 'line' && key === 'immigration' ? {
+                        y: { type: 'linear', display: true, position: 'left' },
+                        y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false } }
+                    } : (type !== 'doughnut' ? {
+                        x: { ticks: { font: { size: 9 } } },
+                        y: { ticks: { font: { size: 9 } } }
+                    } : {})
+                }
+            });
+        }
+
+        function playAudio(key) {
+            currentEraKey = key;
+            playAudioIntro();
+        }
+
+        // Initialize - expand first section
+        window.addEventListener('load', () => {
+            toggleSection('overview');
+        });
+
+    </script>
+</body>
+</html>
