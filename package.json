@@ -1,0 +1,14 @@
+{
+  "name": "dhb",
+  "version": "1.0.0",
+  "description": "DHB Historical Analysis - A Critical Examination of Democratic Policy Impacts",
+  "scripts": {
+    "start": "npx live-server public --port=3000",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "netlify deploy --prod --dir=public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/DHB.git"
+  }
+}
