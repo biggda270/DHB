@@ -3,12 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DHB - Historical Analysis</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="A comprehensive historical examination of Democratic Party policies and their impact on Black Americans, covering segregation, mass incarceration, and immigration.">
+    <meta name="keywords" content="Democratic Party history, Jim Crow, segregation, 1994 Crime Bill, mass incarceration, immigration policy, Black American history, political analysis">
+    <meta name="author" content="DHB Historical Analysis">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://democratshatblacks.org/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://democratshatblacks.org/">
+    <meta property="og:title" content="DHB Historical Analysis - A Critical Examination of Democratic Policy Impacts">
+    <meta property="og:description" content="Explore three critical historical phases: the Segregation Era, the 1994 Crime Bill, and modern immigration policy impacts on Black Americans.">
+    <meta property="og:image" content="https://democratshatblacks.org/assets/og-image.jpg">
+    <meta property="og:site_name" content="DHB Historical Analysis">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://democratshatblacks.org/">
+    <meta name="twitter:title" content="DHB Historical Analysis - Democratic Policy Impacts">
+    <meta name="twitter:description" content="A critical examination of Democratic Party policies and their impact on Black Americans throughout history.">
+    <meta name="twitter:image" content="https://democratshatblacks.org/assets/og-image.jpg">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="msapplication-TileColor" content="#1a1a2e">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+
+    <title>DHB Historical Analysis - Democratic Policy Impacts on Black Americans</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             -webkit-tap-highlight-color: transparent;
+        }
+        html {
+            scroll-behavior: smooth;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
@@ -146,6 +180,39 @@
         .shine:hover::before {
             transform: translateX(100%);
         }
+        /* Back to Top Button */
+        #back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        #back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        #back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        #back-to-top:active {
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body class="min-h-screen bg-stone-50">
@@ -161,12 +228,8 @@
     </header>
 
     <!-- Hero Section with Background Image -->
-    <section class="relative h-64 overflow-hidden">
-        <!-- PLACE IMAGE 1 HERE: Background hero image -->
-        <!-- Suggested: Historical photo collage or abstract image representing Black American history -->
-        <!-- Recommended sources: Unsplash.com search "civil rights" or "black history" -->
-        <!-- OR use: https://images.unsplash.com/photo-1485081669829-bacb8c7bb1f1 -->
-        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1485081669829-bacb8c7bb1f1?w=1200&q=80'); filter: brightness(0.4);"></div>
+    <section class="relative h-64 overflow-hidden" role="banner" aria-label="Hero section">
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1485081669829-bacb8c7bb1f1?w=1200&q=80'); filter: brightness(0.4);" role="img" aria-label="Historical background image"></div>
         <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#1a1a2e]"></div>
         <div class="relative h-full flex items-center justify-center px-4">
             <div class="text-center">
@@ -181,21 +244,21 @@
 
         <!-- Section 1: Overview -->
         <div class="mb-4 section-card">
-            <div class="accordion-header shine bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 rounded-2xl p-5 cursor-pointer" onclick="toggleSection('overview')">
+            <div class="accordion-header shine bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 rounded-2xl p-5 cursor-pointer" onclick="toggleSection('overview')" role="button" aria-expanded="false" aria-controls="content-overview" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ')toggleSection('overview')">
                 <div class="flex justify-between items-center">
                     <div class="flex-1">
                         <div class="flex items-center mb-1">
-                            <span class="text-2xl mr-3">📊</span>
+                            <span class="text-2xl mr-3" role="img" aria-label="Chart icon">📊</span>
                             <h2 class="text-xl font-bold text-white">Overview</h2>
                         </div>
                         <p class="text-sm text-indigo-100 ml-11">Historical critiques summary</p>
                     </div>
-                    <svg class="chevron w-7 h-7 text-white transition-transform" id="chevron-overview" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="chevron w-7 h-7 text-white transition-transform" id="chevron-overview" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </div>
             </div>
-            <div class="accordion-content" id="content-overview">
+            <div class="accordion-content" id="content-overview" role="region" aria-labelledby="overview-heading">
                 <div class="glass-effect rounded-b-2xl p-5 mt-2 shadow-xl border-t-0">
                     <!-- Content injected by JS -->
                 </div>
@@ -204,21 +267,21 @@
 
         <!-- Section 2: Segregation -->
         <div class="mb-4 section-card">
-            <div class="accordion-header shine bg-gradient-to-br from-amber-600 via-orange-600 to-red-600 rounded-2xl p-5 cursor-pointer" onclick="toggleSection('segregation')">
+            <div class="accordion-header shine bg-gradient-to-br from-amber-600 via-orange-600 to-red-600 rounded-2xl p-5 cursor-pointer" onclick="toggleSection('segregation')" role="button" aria-expanded="false" aria-controls="content-segregation" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ')toggleSection('segregation')">
                 <div class="flex justify-between items-center">
                     <div class="flex-1">
                         <div class="flex items-center mb-1">
-                            <span class="text-2xl mr-3">⚖️</span>
+                            <span class="text-2xl mr-3" role="img" aria-label="Justice scales icon">⚖️</span>
                             <h2 class="text-xl font-bold text-white">The Segregation Era</h2>
                         </div>
                         <p class="text-sm text-orange-100 ml-11">Jim Crow & The Solid South</p>
                     </div>
-                    <svg class="chevron w-7 h-7 text-white transition-transform" id="chevron-segregation" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="chevron w-7 h-7 text-white transition-transform" id="chevron-segregation" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </div>
             </div>
-            <div class="accordion-content" id="content-segregation">
+            <div class="accordion-content" id="content-segregation" role="region" aria-labelledby="segregation-heading">
                 <div class="glass-effect rounded-b-2xl p-5 mt-2 shadow-xl border-t-0">
                     <!-- Content injected by JS -->
                 </div>
@@ -227,21 +290,21 @@
 
         <!-- Section 3: Incarceration -->
         <div class="mb-4 section-card">
-            <div class="accordion-header shine bg-gradient-to-br from-red-600 via-rose-700 to-pink-700 rounded-2xl p-5 cursor-pointer" onclick="toggleSection('incarceration')">
+            <div class="accordion-header shine bg-gradient-to-br from-red-600 via-rose-700 to-pink-700 rounded-2xl p-5 cursor-pointer" onclick="toggleSection('incarceration')" role="button" aria-expanded="false" aria-controls="content-incarceration" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ')toggleSection('incarceration')">
                 <div class="flex justify-between items-center">
                     <div class="flex-1">
                         <div class="flex items-center mb-1">
-                            <span class="text-2xl mr-3">🔒</span>
+                            <span class="text-2xl mr-3" role="img" aria-label="Lock icon">🔒</span>
                             <h2 class="text-xl font-bold text-white">Crime & Justice</h2>
                         </div>
                         <p class="text-sm text-rose-100 ml-11">1994 Crime Bill & Mass Incarceration</p>
                     </div>
-                    <svg class="chevron w-7 h-7 text-white transition-transform" id="chevron-incarceration" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="chevron w-7 h-7 text-white transition-transform" id="chevron-incarceration" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </div>
             </div>
-            <div class="accordion-content" id="content-incarceration">
+            <div class="accordion-content" id="content-incarceration" role="region" aria-labelledby="incarceration-heading">
                 <div class="glass-effect rounded-b-2xl p-5 mt-2 shadow-xl border-t-0">
                     <!-- Content injected by JS -->
                 </div>
@@ -250,21 +313,21 @@
 
         <!-- Section 4: Immigration -->
         <div class="mb-4 section-card">
-            <div class="accordion-header shine bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600 rounded-2xl p-5 cursor-pointer" onclick="toggleSection('immigration')">
+            <div class="accordion-header shine bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600 rounded-2xl p-5 cursor-pointer" onclick="toggleSection('immigration')" role="button" aria-expanded="false" aria-controls="content-immigration" tabindex="0" onkeypress="if(event.key==='Enter'||event.key===' ')toggleSection('immigration')">
                 <div class="flex justify-between items-center">
                     <div class="flex-1">
                         <div class="flex items-center mb-1">
-                            <span class="text-2xl mr-3">🌍</span>
+                            <span class="text-2xl mr-3" role="img" aria-label="Globe icon">🌍</span>
                             <h2 class="text-xl font-bold text-white">Immigration & Economics</h2>
                         </div>
                         <p class="text-sm text-cyan-100 ml-11">Resource allocation & displacement</p>
                     </div>
-                    <svg class="chevron w-7 h-7 text-white transition-transform" id="chevron-immigration" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="chevron w-7 h-7 text-white transition-transform" id="chevron-immigration" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </div>
             </div>
-            <div class="accordion-content" id="content-immigration">
+            <div class="accordion-content" id="content-immigration" role="region" aria-labelledby="immigration-heading">
                 <div class="glass-effect rounded-b-2xl p-5 mt-2 shadow-xl border-t-0">
                     <!-- Content injected by JS -->
                 </div>
@@ -304,12 +367,54 @@
             </div>
         </div>
 
+        <!-- Sources & Citations Section -->
+        <section class="mt-12 mb-8 max-w-2xl mx-auto">
+            <div class="glass-effect rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center mb-4">
+                    <span class="text-2xl mr-3">📚</span>
+                    <h3 class="text-xl font-bold text-gray-800">Sources & Further Reading</h3>
+                </div>
+                <div class="space-y-3 text-sm text-gray-700">
+                    <div class="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                        <p class="font-semibold text-gray-800 mb-1">Segregation Era</p>
+                        <ul class="list-disc ml-5 space-y-1">
+                            <li>Katznelson, I. (2005). <em>When Affirmative Action Was White</em>. W.W. Norton & Company.</li>
+                            <li>Woodward, C. V. (1955). <em>The Strange Career of Jim Crow</em>. Oxford University Press.</li>
+                        </ul>
+                    </div>
+                    <div class="p-3 bg-amber-50 rounded-lg border-l-4 border-amber-500">
+                        <p class="font-semibold text-gray-800 mb-1">Crime Bill & Incarceration</p>
+                        <ul class="list-disc ml-5 space-y-1">
+                            <li>Alexander, M. (2010). <em>The New Jim Crow: Mass Incarceration in the Age of Colorblindness</em>. The New Press.</li>
+                            <li>Violent Crime Control and Law Enforcement Act of 1994, Pub. L. No. 103-322.</li>
+                            <li>Bureau of Justice Statistics. (2020). Correctional Populations in the United States.</li>
+                        </ul>
+                    </div>
+                    <div class="p-3 bg-teal-50 rounded-lg border-l-4 border-teal-500">
+                        <p class="font-semibold text-gray-800 mb-1">Immigration & Economics</p>
+                        <ul class="list-disc ml-5 space-y-1">
+                            <li>Borjas, G. J. (2003). "The Labor Demand Curve Is Downward Sloping." <em>Quarterly Journal of Economics</em>, 118(4).</li>
+                            <li>Immigration and Nationality Act of 1965 (Hart-Celler Act), Pub. L. No. 89-236.</li>
+                        </ul>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-4 italic text-center">
+                        Note: This platform presents historical critiques and perspectives. Readers are encouraged to consult primary sources and academic literature for comprehensive analysis.
+                    </p>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <footer class="glass-effect border-t border-white/20 py-6 mt-8">
         <p class="text-center text-xs text-gray-600 font-medium">© 2026 DHB Historical Policy Analysis</p>
         <p class="text-center text-xs text-gray-400 mt-1">Designed for educational purposes</p>
     </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" onclick="scrollToTop()" aria-label="Back to top" title="Back to top">
+        ↑
+    </button>
 
     <script>
         // --- GEMINI API CONFIG ---
@@ -691,17 +796,20 @@
         function toggleSection(key) {
             const content = document.getElementById(`content-${key}`);
             const chevron = document.getElementById(`chevron-${key}`);
+            const header = content.previousElementSibling;
             const isActive = content.classList.contains('active');
 
             if (isActive) {
                 // Close section
                 content.classList.remove('active');
                 chevron.classList.remove('rotate-180');
+                header.setAttribute('aria-expanded', 'false');
             } else {
                 // Open section
                 currentEraKey = key;
                 content.classList.add('active');
                 chevron.classList.add('rotate-180');
+                header.setAttribute('aria-expanded', 'true');
 
                 // Render content for this section
                 renderSectionContent(key);
@@ -883,6 +991,24 @@
         // Initialize - expand first section
         window.addEventListener('load', () => {
             toggleSection('overview');
+        });
+
+        // Back to Top Button functionality
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Show/hide back to top button on scroll
+        window.addEventListener('scroll', () => {
+            const backToTopBtn = document.getElementById('back-to-top');
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
         });
 
     </script>
